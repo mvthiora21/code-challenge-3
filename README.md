@@ -2,7 +2,7 @@
 Challenge-3-Flatadango
 
 code-challenge-3-
-Phase 1 code challenge 3
+Phase 1 CODE CHALLENGE 3
 
 This website app functions in a manner through which can see the films list and its detailed description. It also enables one to book a movie and shows the number of tickets remaining. ##Development requirements Visual studio code Live server extension npm json-sever Technology used HTML CSS Javascript Bootstrap Deliverables As a user, I can:
 
@@ -44,4 +44,4 @@ HTML
  
 CSS
 
-Footer
+
