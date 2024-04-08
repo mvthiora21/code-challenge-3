@@ -1,43 +1,62 @@
 //write your code here
 // Define the URL of the API endpoint
 let url = 'https://api.npoint.io/f8d1be198a18712d3f29/films/';
+const listHolder = document.getElementById('films');
+
+document.addEventListener('DOMContentLoaded',() => {
+    //Remove the placeholder list item
+    document.querySelector('.film.item').remove();
+    fetchMovies(url);
+ });
 
 // Function to fetch movies data from the API
 function fetchMovies(url) {
     fetch(url)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok){
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(movies => {
             movies.forEach(movie => {
                 displayMovie(movie);
             });
-        });
+        })
+        .catch(error => {
+            console.error('Error fetching movies :', error);
+        })
 }
 
-// Function to display movie titles in the list
+// Function to display individual movie titles in the list
 function displayMovie(movie) {
-    const listHolder = document.getElementById('films');
     const li = document.createElement('li');
     li.style.cursor = "pointer";
     li.textContent = movie.title.toUpperCase();
     listHolder.appendChild(li);
-    addClickEvent(li); // Pass the created list item to addClickEvent function
+    addClickEvent(li , movie.id); // Pass the movie ID to addClickEvent
 }
 
-// Function to add click event listener to movie list items
-function addClickEvent(li) {
+// Function to handle click events on movie titles
+function addClickEvent(li,movieId) {
     li.addEventListener('click', () => {
-        // Fetch movie details using the specified URL and movie title
-        fetch(`${url}/${li.textContent.toLowerCase().replace(/\s+/g, '-')}`)
-            .then(res => res.json())
+        fetch(`${url}/${movieId}`)
+            .then(res =>{
+                if (!res.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return res.json();
+            })
             .then(movie => {
-                // Update movie details on the page
                 document.getElementById('buy-ticket').textContent = 'Buy Ticket';
                 setUpMovieDetails(movie);
-            });
-    });
-}
+            })
+            .catch(error => {('Error fetching movie details:', error);
+             });
 
-// Function to set up movie details display
+                });
+                 }
+// Function to display movie details
 function setUpMovieDetails(childMovie) {
     const preview = document.getElementById('poster');
     preview.src = childMovie.poster;
@@ -50,20 +69,15 @@ function setUpMovieDetails(childMovie) {
 }
 
 // Add event listener to the 'Buy Ticket' button
-document.getElementById('buy-ticket').addEventListener('click', function(e) {
-    let remTickets = document.querySelector('#ticket-num').textContent;
+const btn = document.getElementById('buy-ticket');
+btn.addEventListener('click', function(e) {
+    let remTickets = parseInt(document.querySelector('#ticket-num').textContent,10);
     e.preventDefault();
     if (remTickets > 0) {
-        document.querySelector('#ticket-num').textContent = remTickets - 1;
-    } else if (parseInt(remTickets, 10) === 0) {
-        this.textContent = 'Sold Out'; // 'this' refers to the button element
+        document.querySelector('#ticket-num').textContent = remTickets -1;
+    }else {
+        btn.textContent = 'Sold Out';
     }
 });
 
-// Execute fetchMovies function when the DOM content is fully loaded
-document.addEventListener('DOMContentLoaded', () => {
-    // Remove the placeholder list item
-    document.querySelector('.film.item').remove();
-    // Fetch movies data
-    fetchMovies(url);
-});
+
