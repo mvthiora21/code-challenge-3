@@ -1,83 +1,86 @@
-//write your code here
 // Define the URL of the API endpoint
-let url = 'https://api.npoint.io/f8d1be198a18712d3f29/films/';
-const listHolder = document.getElementById('films');
+const url = 'https://api.npoint.io/f8d1be198a18712d3f29/films/';
 
-document.addEventListener('DOMContentLoaded',() => {
-    //Remove the placeholder list item
+// fetch movies after loading page
+document.addEventListener('DOMContentLoaded', () => {
+    // Remove a placeholder list item
     document.querySelector('.film.item').remove();
-    fetchMovies(url);
- });
+    // Fetch movies from the API
+    fetchMovies();
+});
 
 // Function to fetch movies data from the API
-function fetchMovies(url) {
-    fetch(url)
-        .then(response => {
-            if (!response.ok){
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(movies => {
-            movies.forEach(movie => {
-                displayMovie(movie);
-            });
-        })
-        .catch(error => {
-            console.error('Error fetching movies :', error);
-        })
+async function fetchMovies() {
+    try {
+        // Fetch data from the API
+        const response = await fetch(url);
+        // Check if response is successful
+        if (!response.ok) {
+            throw new Error('Failed to fetch movies');
+        }
+        // Convert response data to JSON
+        const movies = await response.json();
+        // Display each movie
+        movies.forEach(movie => displayMovie(movie));
+    } catch (error) {
+        console.error('Error fetching movies:', error);
+    }
 }
 
 // Function to display individual movie titles in the list
 function displayMovie(movie) {
+    // Create a new list item
     const li = document.createElement('li');
-    li.style.cursor = "pointer";
+    // Set the text of the list item to the movie title in uppercase
     li.textContent = movie.title.toUpperCase();
-    listHolder.appendChild(li);
-    addClickEvent(li , movie.id); // Pass the movie ID to addClickEvent
+    // Add a click event listener to the list item
+    li.addEventListener('click', async () => {
+        try {
+            // Fetch details of the clicked movie
+            const response = await fetch(`${url}/${movie.id}`);
+            // Check if response is successful
+            if (!response.ok) {
+                throw new Error('Failed to fetch movie details');
+            }
+            // Convert response data to JSON
+            const childMovie = await response.json();
+            // Update movie details on the page
+            updateMovieDetails(childMovie);
+        } catch (error) {
+            console.error('Error fetching movie details:', error);
+        }
+    });
+    // Add the list item to the films list
+    document.getElementById('films').appendChild(li);
 }
 
-// Function to handle click events on movie titles
-function addClickEvent(li,movieId) {
-    li.addEventListener('click', () => {
-        fetch(`${url}/${movieId}`)
-            .then(res =>{
-                if (!res.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return res.json();
-            })
-            .then(movie => {
-                document.getElementById('buy-ticket').textContent = 'Buy Ticket';
-                setUpMovieDetails(movie);
-            })
-            .catch(error => {('Error fetching movie details:', error);
-             });
-
-                });
-                 }
-// Function to display movie details
-function setUpMovieDetails(childMovie) {
-    const preview = document.getElementById('poster');
-    preview.src = childMovie.poster;
-
-    document.getElementById('title').textContent = childMovie.title;
-    document.getElementById('runtime').textContent = `${childMovie.runtime} minutes`;
-    document.getElementById('film-info').textContent = childMovie.description;
-    document.getElementById('showtime').textContent = childMovie.showtime;
-    document.getElementById('ticket-num').textContent = childMovie.capacity - childMovie.tickets_sold;
+// Function to update movie details on the page
+function updateMovieDetails(movie) {
+    // Update poster image source
+    document.getElementById('poster').src = movie.poster;
+    // Update movie title
+    document.getElementById('title').textContent = movie.title;
+    // Update movie runtime
+    document.getElementById('runtime').textContent = `${movie.runtime} minutes`;
+    // Update movie description
+    document.getElementById('film-info').textContent = movie.description;
+    // Update movie showtime
+    document.getElementById('showtime').textContent = movie.showtime;
+    // Update remaining ticket count
+    const remainingTickets = movie.capacity - movie.tickets_sold;
+    document.getElementById('ticket-num').textContent = remainingTickets;
 }
 
-// Add event listener to the 'Buy Ticket' button
-const btn = document.getElementById('buy-ticket');
-btn.addEventListener('click', function(e) {
-    let remTickets = parseInt(document.querySelector('#ticket-num').textContent,10);
-    e.preventDefault();
-    if (remTickets > 0) {
-        document.querySelector('#ticket-num').textContent = remTickets -1;
-    }else {
-        btn.textContent = 'Sold Out';
+// Buy Ticket button event listener
+document.getElementById('buy-ticket').addEventListener('click', () => {
+    // Get the remaining ticket count
+    const ticketNum = document.getElementById('ticket-num');
+    let remainingTickets = parseInt(ticketNum.textContent);
+    // If there are remaining tickets, decrement the count
+    if (remainingTickets > 0) {
+        ticketNum.textContent = remainingTickets - 1;
+    } else {
+        // If no tickets left, show "Sold Out" message
+        document.getElementById('buy-ticket').textContent = 'Sold Out';
     }
 });
-
-
